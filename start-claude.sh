@@ -46,6 +46,86 @@ for var in "${required_vars[@]}"; do
 done
 
 # ==============================================================================
+# Resolve Claude CLI Path
+# ==============================================================================
+resolve_claude_cli_path() {
+    # Tier 1: Validate configured path
+    if [ -n "$CLAUDE_CLI" ] && [ -x "$CLAUDE_CLI" ]; then
+        # Configured path is valid and executable
+        return 0
+    fi
+
+    # Tier 2: Auto-detect Claude CLI
+    local detected_path=""
+
+    # Method 1: Check if 'claude' is in PATH
+    if command -v claude &> /dev/null; then
+        detected_path=$(command -v claude)
+    fi
+
+    # Method 2: Check common installation locations
+    if [ -z "$detected_path" ]; then
+        local common_paths=(
+            "$HOME/.local/bin/claude"
+            "/usr/local/bin/claude"
+            "$HOME/.npm-global/bin/claude"
+            "/opt/homebrew/bin/claude"
+        )
+
+        for path in "${common_paths[@]}"; do
+            if [ -x "$path" ]; then
+                detected_path="$path"
+                break
+            fi
+        done
+    fi
+
+    # Method 3: Search nvm directories (if nvm exists)
+    if [ -z "$detected_path" ] && [ -d "$HOME/.nvm/versions/node" ]; then
+        for nvm_path in "$HOME/.nvm/versions/node"/*/bin/claude; do
+            if [ -x "$nvm_path" ]; then
+                detected_path="$nvm_path"
+                break
+            fi
+        done
+    fi
+
+    # If detected, use it with a warning
+    if [ -n "$detected_path" ]; then
+        echo "⚠️  Warning: Configured CLAUDE_CLI path is invalid: $CLAUDE_CLI"
+        echo "   Auto-detected Claude CLI at: $detected_path"
+        echo "   Using detected path for this session."
+        echo ""
+        echo "   To fix permanently, update ~/.start-claude.env:"
+        echo "   CLAUDE_CLI=\"$detected_path\""
+        echo ""
+        CLAUDE_CLI="$detected_path"
+        return 0
+    fi
+
+    # Tier 3: Error with guidance
+    echo "❌ Error: Claude CLI not found"
+    echo ""
+    echo "Configured path is invalid: $CLAUDE_CLI"
+    echo ""
+    echo "Troubleshooting steps:"
+    echo "1. Check if Claude CLI is installed:"
+    echo "   which claude"
+    echo ""
+    echo "2. If installed, update ~/.start-claude.env with the correct path:"
+    echo "   CLAUDE_CLI=\"\$(which claude)\""
+    echo ""
+    echo "3. If not installed, install Claude CLI:"
+    echo "   npm install -g @anthropic-ai/claude-code"
+    echo ""
+    echo "4. Then run ./install.sh to validate the configuration"
+    exit 1
+}
+
+# Resolve Claude CLI path before proceeding
+resolve_claude_cli_path
+
+# ==============================================================================
 # Configuration Paths
 # ==============================================================================
 SETTINGS_FILE="$HOME/.claude/settings.json"

@@ -44,6 +44,51 @@ for var in "${required_vars[@]}"; do
 done
 
 # ==============================================================================
+# Validate Claude CLI Path
+# ==============================================================================
+echo "🔍 Validating Claude CLI path..."
+
+if [ -x "$CLAUDE_CLI" ]; then
+    echo "✅ Claude CLI found at: $CLAUDE_CLI"
+elif command -v "$CLAUDE_CLI" &> /dev/null; then
+    # CLAUDE_CLI is a command name (like "claude"), not a full path
+    actual_path=$(command -v "$CLAUDE_CLI")
+    echo "✅ Claude CLI found at: $actual_path"
+else
+    echo "⚠️  Warning: Claude CLI not found at configured path: $CLAUDE_CLI"
+    echo ""
+    echo "Attempting to auto-detect Claude CLI..."
+
+    # Try to find Claude CLI
+    detected_path=""
+    if command -v claude &> /dev/null; then
+        detected_path=$(command -v claude)
+    elif [ -x "$HOME/.local/bin/claude" ]; then
+        detected_path="$HOME/.local/bin/claude"
+    elif [ -x "/usr/local/bin/claude" ]; then
+        detected_path="/usr/local/bin/claude"
+    fi
+
+    if [ -n "$detected_path" ]; then
+        echo "✅ Found Claude CLI at: $detected_path"
+        echo ""
+        echo "To fix this permanently, update ~/.start-claude.env:"
+        echo "   CLAUDE_CLI=\"$detected_path\""
+        echo ""
+        read -p "Press Enter to continue with current configuration... " -r
+    else
+        echo "❌ Error: Claude CLI not found"
+        echo ""
+        echo "Please install Claude CLI first:"
+        echo "   npm install -g @anthropic-ai/claude-code"
+        echo ""
+        echo "Then update ~/.start-claude.env with the correct path:"
+        echo "   CLAUDE_CLI=\"\$(which claude)\""
+        exit 1
+    fi
+fi
+
+# ==============================================================================
 # Create symlink for main script
 # ==============================================================================
 echo "🔗 Creating symlink ~/start-claude.sh -> $PROJECT_DIR/start-claude.sh"
