@@ -1,0 +1,7 @@
+# Ignore environment files with actual configuration
+*.env
+.env.local
+~/.start-claude.env
+
+# Ignore OS files
+.DS_Store
