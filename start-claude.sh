@@ -18,7 +18,7 @@ if [ ! -f "$ENV_FILE" ]; then
     echo "❌ Error: Configuration file not found at $ENV_FILE"
     echo ""
     echo "Please run install.sh to set up your configuration:"
-    echo "  cd ~/Documents/dev/ai-projects/start-claude-script"
+    echo "  cd <project-directory>"
     echo "  ./install.sh"
     exit 1
 fi

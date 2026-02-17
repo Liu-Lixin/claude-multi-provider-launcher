@@ -26,7 +26,7 @@ start-claude-script/
 
 1. Navigate to the project directory:
    ```bash
-   cd ~/Documents/dev/ai-projects/start-claude-script
+   cd /path/to/start-claude-script
    ```
 
 2. Run the install script:
@@ -64,7 +64,7 @@ Select a provider from the menu and press Enter to launch.
 
 2. Apply changes:
    ```bash
-   cd ~/Documents/dev/ai-projects/start-claude-script
+   cd /path/to/start-claude-script
    ./install.sh
    ```
 
